@@ -1,5 +1,6 @@
 venv/
-
+*.csv
 __pycache__/
+*.png
 *.log
 .DS_Store
