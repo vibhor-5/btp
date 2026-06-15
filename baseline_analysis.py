@@ -194,7 +194,6 @@ def explain_model_shap(model, X_train, X_test):
         print(f"- {feat} = {val:.2f} (SHAP contribution: {contrib:+.4f})")
     
     # Save a force plot for the instance
-    shap.initjs()
     force_plot = shap.force_plot(base_value, instance_shap, instance, matplotlib=True, show=False)
     if force_plot is not None:
         plt.savefig('shap_force_plot_instance.png', bbox_inches='tight')
