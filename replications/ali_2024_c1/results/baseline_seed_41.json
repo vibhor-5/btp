@@ -1,0 +1,48 @@
+{
+  "dataset": "/Users/anurag/Library/CloudStorage/OneDrive-iiitm.ac.in/BTP/data/raw/Training_Dataset_v2.csv",
+  "seed": 41,
+  "balanced_rows": 17009,
+  "missing_lead_time_after_downsampling": 791,
+  "class_counts": {
+    "1": 8648,
+    "0": 8361
+  },
+  "all_features": [
+    "sku",
+    "national_inv",
+    "lead_time",
+    "in_transit_qty",
+    "forecast_3_month",
+    "forecast_6_month",
+    "forecast_9_month",
+    "sales_1_month",
+    "sales_3_month",
+    "sales_6_month",
+    "sales_9_month",
+    "min_bank",
+    "potential_issue",
+    "pieces_past_due",
+    "perf_6_month_avg",
+    "perf_12_month_avg",
+    "local_bo_qty",
+    "deck_risk",
+    "oe_constraint",
+    "ppap_risk",
+    "stop_auto_buy",
+    "rev_stop"
+  ],
+  "selected_features": [
+    "national_inv",
+    "lead_time",
+    "in_transit_qty",
+    "forecast_3_month",
+    "sales_3_month"
+  ],
+  "notes": [
+    "Baseline uses default/fixed model settings, not paper tuning.",
+    "Downsampling is performed before the train/test split.",
+    "Missing lead_time rows are removed after downsampling.",
+    "SKU is retained because Table 3 counts it among 22 predictors.",
+    "Scaling and encoding are fitted on training data only."
+  ]
+}
