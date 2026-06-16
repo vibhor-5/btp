@@ -1,0 +1,41 @@
+[
+  {
+    "file": "data/raw/Training_Dataset_v2.csv",
+    "rows": 1048575,
+    "columns": 23,
+    "column_names": [
+      "sku",
+      "national_inv",
+      "lead_time",
+      "in_transit_qty",
+      "forecast_3_month",
+      "forecast_6_month",
+      "forecast_9_month",
+      "sales_1_month",
+      "sales_3_month",
+      "sales_6_month",
+      "sales_9_month",
+      "min_bank",
+      "potential_issue",
+      "pieces_past_due",
+      "perf_6_month_avg",
+      "perf_12_month_avg",
+      "local_bo_qty",
+      "deck_risk",
+      "oe_constraint",
+      "ppap_risk",
+      "stop_auto_buy",
+      "rev_stop",
+      "went_on_backorder"
+    ],
+    "missing_values": {
+      "lead_time": 64518
+    },
+    "duplicate_rows": 0,
+    "target_column": "went_on_backorder",
+    "target_counts": {
+      "No": 1039675,
+      "Yes": 8900
+    }
+  }
+]
