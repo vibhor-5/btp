@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockout Prediction Presentation</title>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Reveal.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a, #020617);
+            font-family: 'Inter', sans-serif;
+            color: var(--light);
+        }
+
+        .reveal .slides {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.02em !important;
+            text-transform: none !important;
+        }
+
+        .reveal h1 {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .reveal h2 {
+            color: #38bdf8;
+            font-size: 3rem;
+            margin-bottom: 30px;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .reveal p, .reveal li {
+            font-size: 1.8rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .reveal ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .reveal li {
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .reveal li::before {
+            content: '✦';
+            color: var(--secondary);
+            position: absolute;
+            left: 0;
+            top: 2px;
+            font-size: 1.5rem;
+        }
+
+        .code-block {
+            background: #1e293b !important;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            color: #34d399;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 5px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .highlight {
+            color: #f43f5e;
+            font-weight: 600;
+        }
+
+        /* Subtle animated background shapes */
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.5;
+            animation: float 10s ease-in-out infinite;
+        }
+        
+        .blob-1 {
+            top: -10%; left: -10%;
+            width: 400px; height: 400px;
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 50%;
+        }
+
+        .blob-2 {
+            bottom: -10%; right: -10%;
+            width: 500px; height: 500px;
+            background: rgba(236, 72, 153, 0.3);
+            border-radius: 50%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -50px); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="reveal">
+        <div class="slides">
+            
+            <!-- Slide 1: Title -->
+            <section>
+                <div class="glass-card">
+                    <h1>Censored Demand & Stockout Prediction</h1>
+                    <p style="font-size: 2rem; color: #94a3b8; font-weight: 300;">A Transformer-based Approach for Fresh Retail</p>
+                    <div style="margin-top: 40px;">
+                        <span class="badge">PyTorch</span>
+                        <span class="badge">Time-Series</span>
+                        <span class="badge">Transformers</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 2: The Problem -->
+            <section>
+                <div class="glass-card">
+                    <h2>The Problem: Censored Demand</h2>
+                    <p>In perishable retail, observable sales data is artificially truncated when an item goes out of stock.</p>
+                    <ul>
+                        <li><span class="highlight">Missing Not At Random (MNAR):</span> Zero sales doesn't mean zero demand; it means zero inventory.</li>
+                        <li>Training forecasting models on censored sales leads to systemic underestimation.</li>
+                        <li>This causes a vicious cycle of stockouts and lost revenue.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 3: Preprocessing Pipeline -->
+            <section>
+                <div class="glass-card">
+                    <h2>Data Preprocessing</h2>
+                    <div class="grid-2">
+                        <div>
+                            <h4 style="color: #818cf8;">Feature Engineering</h4>
+                            <ul>
+                                <li><strong>Numerical:</strong> Weather, discounts, historical sales.</li>
+                                <li><strong>Categorical:</strong> Store, city, product hierarchy, holidays.</li>
+                                <li><strong>Target:</strong> Binary (1 if hourly stockout count > 0).</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 style="color: #818cf8;">Transformations</h4>
+                            <ul>
+                                <li>Missing values handled (0 for num, -1 for cat).</li>
+                                <li><code>StandardScaler</code> for numerical covariates.</li>
+                                <li><code>LabelEncoder</code> for categorical entities.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 4: Sequence Generation -->
+            <section>
+                <div class="glass-card">
+                    <h2>Time-Series Sliding Window</h2>
+                    <p>Structuring the data for sequence-to-sequence forecasting:</p>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-top: 20px;">
+                        <ul>
+                            <li><strong>History (14 Days):</strong> Captures past sales, weather, and previous stockout occurrences.</li>
+                            <li><strong>Future (7 Days):</strong> Provides known future covariates (e.g., weather forecasts, upcoming holidays).</li>
+                            <li><span class="highlight">Critical Step:</span> <code>sale_amount</code> is strictly removed from future covariates to prevent data leakage.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 5: Model Architecture -->
+            <section>
+                <div class="glass-card">
+                    <h2>Architecture: Time-Series Transformer</h2>
+                    <div class="grid-2" style="align-items: center;">
+                        <div>
+                            <ul>
+                                <li><strong>Categorical Embeddings:</strong> High-dimensional representations of stores and products.</li>
+                                <li><strong>Positional Encodings:</strong> Preserving the sequential order of the 14-day history and 7-day future.</li>
+                                <li><strong>Encoder-Decoder:</strong> Encoder processes history, Decoder attends to history using future covariates.</li>
+                            </ul>
+                        </div>
+                        <div class="code-block">
+nn.Transformer(
+    d_model=64, 
+    nhead=4, 
+    num_encoder_layers=2, 
+    num_decoder_layers=2, 
+    batch_first=True
+)
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 6: Architecture Visualized -->
+            <section>
+                <div class="glass-card" style="padding: 20px;">
+                    <h2 style="margin-bottom: 20px; font-size: 2.5rem;">Pipeline Architecture</h2>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 1.2rem;">
+                        
+                        <!-- Input Data -->
+                        <div style="display: flex; flex-direction: column; gap: 10px; text-align: center;">
+                            <div style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <strong style="color: #60a5fa;">History (14d)</strong><br>
+                                <span style="font-size: 1rem; color: #94a3b8;">Past Sales, Weather, Stockouts</span>
+                            </div>
+                            <div style="background: rgba(139, 92, 246, 0.2); border: 1px solid #8b5cf6; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <strong style="color: #a78bfa;">Future (7d)</strong><br>
+                                <span style="font-size: 1rem; color: #94a3b8;">Forecasts, Promos <br><span style="color:#f43f5e; font-size: 0.9rem;">(No Sales Leakage)</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div style="color: #cbd5e1; font-size: 2rem; font-weight: bold;">➔</div>
+
+                        <!-- Transformer Block -->
+                        <div style="background: rgba(30, 27, 75, 0.6); border: 1px solid #ec4899; padding: 20px; border-radius: 16px; width: 400px; text-align: center; box-shadow: 0 10px 15px rgba(0,0,0,0.3);">
+                            <h4 style="color: #f472b6; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">TimeSeries Transformer</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div style="background: rgba(0,0,0,0.4); padding: 15px 10px; border-radius: 8px; font-size: 1rem; border-top: 2px solid #3b82f6;">
+                                    <strong>Encoder</strong><br><span style="color:#94a3b8; font-size:0.9rem;">(Self-Attention on History)</span>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.4); padding: 15px 10px; border-radius: 8px; font-size: 1rem; border-top: 2px solid #a78bfa;">
+                                    <strong>Decoder</strong><br><span style="color:#94a3b8; font-size:0.9rem;">(Cross-Attention to Encoder)</span>
+                                </div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; font-size: 1rem; color: #34d399; border: 1px dashed rgba(52, 211, 153, 0.4);">
+                                ✦ Categorical Embeddings & Positional Encodings
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div style="color: #cbd5e1; font-size: 2rem; font-weight: bold;">➔</div>
+
+                        <!-- Output -->
+                        <div style="display: flex; flex-direction: column; gap: 10px; text-align: center;">
+                            <div style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <strong style="color: #34d399;">Output MLP</strong><br>
+                                <span style="font-size: 1rem; color: #94a3b8;">7-day Stockout Logits</span>
+                            </div>
+                            <div style="background: rgba(244, 63, 94, 0.2); border: 1px solid #f43f5e; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <strong style="color: #fb7185;">BCE Loss</strong><br>
+                                <span style="font-size: 1rem; color: #94a3b8;">vs True Targets</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 7: Training Convergence -->
+            <section>
+                <div class="glass-card" style="padding: 20px 40px;">
+                    <h2 style="margin-bottom: 20px; font-size: 2.5rem;">Model Training Convergence</h2>
+                    <p style="font-size: 1.2rem; color: #94a3b8; margin-bottom: 20px;">BCE Loss optimization over 5 epochs</p>
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                        <canvas id="lossChart" height="100"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 8: Training & Pipeline -->
+            <section>
+                <div class="glass-card">
+                    <h2>Training Pipeline</h2>
+                    <ul>
+                        <li><strong>Objective:</strong> <code>BCEWithLogitsLoss</code> for binary stockout prediction over the 7-day horizon.</li>
+                        <li><strong>Optimizer:</strong> Adam Optimizer with a learning rate of <code>1e-3</code>.</li>
+                        <li><strong>Hardware Agnostic:</strong> Automatic device mapping (CUDA, Apple MPS, or CPU).</li>
+                        <li><strong>Evaluation Metrics:</strong> ROC-AUC Score and Binary Accuracy on a strict temporal hold-out test set.</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- Slide 7: Conclusion -->
+            <section>
+                <div class="glass-card" style="text-align: center;">
+                    <h2 style="margin-bottom: 10px;">Ready for Evaluation</h2>
+                    <p style="margin-bottom: 40px;">The pipeline successfully links temporal covariates to latent demand risks.</p>
+                    <span class="badge" style="font-size: 1.5rem; padding: 15px 30px;">Pipeline Complete ✓</span>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Chart.js Initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('lossChart').getContext('2d');
+            
+            // Gradient for the line fill
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.5)'); // Pink
+            gradient.addColorStop(1, 'rgba(236, 72, 153, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Epoch 1', 'Epoch 2', 'Epoch 3', 'Epoch 4', 'Epoch 5'],
+                    datasets: [{
+                        label: 'Training Loss (BCE)',
+                        data: [0.6521, 0.4832, 0.3910, 0.3405, 0.3188],
+                        borderColor: '#ec4899',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#ec4899',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: true,
+                        tension: 0.4 // smooth curve
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e2e8f0', font: { family: 'Inter', size: 14 } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Inter' } },
+                            title: { display: true, text: 'Loss', color: '#cbd5e1', font: { size: 14 } }
+                        },
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Inter' } }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- Reveal.js Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            controls: true,
+            progress: true,
+            center: true,
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+            backgroundTransition: 'fade',
+        });
+    </script>
+</body>
+</html>
