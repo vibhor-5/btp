@@ -51,149 +51,90 @@
 % ==========================================
 % SLIDE 2: PROBLEM STATEMENT & OBJECTIVE METRICS
 % ==========================================
-\begin{frame}{Problem Statement \& Objective Metrics}
-  \small
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Operational Challenge in Fresh Retail}
-        \begin{itemize}
-          \item Perishable fresh items suffer from \textbf{rapid intra-day demand shocks} and supply replenishment lags.
-          \item Unpredicted stockouts cause direct financial revenue loss, stock spoilage, and customer churn.
-        \end{itemize}
-      \end{block}
-      
-      \begin{block}{Predictive Target Formulation}
-        \begin{itemize}
-          \item Forecast a \textbf{24-dim binary hourly status vector}:\\
-            $\mathbf{Y} = [y_1, y_2, \dots, y_{24}]^T \in \{0, 1\}^{24}$
-          \item Covers active operational store hours (\textbf{6 AM to 10 PM}).
-          \item $y_h = 1$ indicates SKU stockout during hour $h$.
-        \end{itemize}
-      \end{block}
-    \end{column}
-    
-    \begin{column}{0.48\textwidth}
-      \begin{exampleblock}{Key Objective Performance Metrics}
-        \begin{itemize}
-          \item \textbf{Hour-Level F1-Score} (Primary Metric): Evaluates precision vs. recall on positive stockout hours: $F1 = \frac{2 \cdot P \cdot R}{P + R}$
-          \item \textbf{Stockout Recall}: Measures percentage of true operational stockout hours correctly detected ($R = \frac{TP}{TP + FN}$).
-        \end{itemize}
-      \end{exampleblock}
-    \end{column}
-  \end{columns}
+\begin{frame}{Problem Statement \& Challenges}
+  \begin{block}{The Fresh Retail Dilemma}
+    Fresh retail operations face a constant battle between \textbf{overstocking} (leading to spoilage and massive food waste) and \textbf{understocking} (leading to lost revenue, stockouts, and customer churn). Accurate, intraday prediction of out-of-stock (OOS) events is critical for dynamic shelf replenishment.
+  \end{block}
+
+  \vspace{0.3cm}
+
+  \begin{exampleblock}{Core Modeling Challenges}
+    \small
+    \begin{itemize}
+      \item \textbf{Censored Demand (Stockout-Induced Bias)}: When an item is out of stock, sales record as zero. Traditional forecasting models misinterpret this as ``zero demand'', leading to a negative feedback loop of systematic under-ordering.
+      \item \textbf{Severe Class Imbalance}: True stockout hours are rare anomalies (often $<5\%$ of total operational hours), making it extremely difficult for standard ML loss functions to learn the minority class without collapsing.
+      \item \textbf{High-Velocity Intraday Dynamics}: Unlike durable goods, fresh produce sales exhibit extreme intraday volatility driven by time-of-day foot traffic, flash sales, and perishable shelf-life windows.
+      \item \textbf{Hierarchical Spatial-Temporal Variance}: Demand shocks are not uniform; they vary heavily across different city zones, specific store demographics, and individual SKU categories.
+    \end{itemize}
+  \end{exampleblock}
 \end{frame}
 
 % ==========================================
 % SLIDE 3: LITERATURE REVIEW & RELATED WORK
 % ==========================================
 \begin{frame}{Literature Review \& Related Work}
-  \begin{block}{Taxonomy of Time-Series Forecasting Literature}
+  \begin{block}{General Stockout Prediction Research}
     \small
     \begin{itemize}
-      \item \textbf{Recurrent Sequence Memory} (Hochreiter \& Schmidhuber, 1997):
-        \textit{LSTM} maintains persistent cell state memory $C_t$ for temporal sequence continuity.
-      \item \textbf{Deep Time-Series Transformers} (Lim et al., 2021 [TFT]; Zeng et al., 2023 [PatchTST]):
-        Self-attention mechanisms suffer from \textbf{overparameterization ($>280\text{k}$ params)} on short sequences.
-      \item \textbf{Linear Series Decomposition} (Zeng et al., 2023 [DLinear]; Challu et al., 2023 [N-HiTS]):
-        Moving-average trend decomposition provides parameter-efficient baselines ($<15\text{k}$ params).
-      \item \textbf{Explainable AI in Retail} (Sundararajan et al., 2017 [IG]; Lundberg \& Lee, 2017 [SHAP]):
-        Attribution methods reveal feature-level importance to guide neural architecture design.
-      \item \textbf{FreshRetail Benchmark Studies} (Same Dataset):
-        Recent domain-specific works like \textit{"A Coupled Hierarchical Architecture for Multi-Granularity Demand Forecasting"} and \textit{"When Less Data Is Better: Eliminating Stockout-Induced Bias in Choice Estimation"} use this dataset to model complex stockout biases.
+      \item \textbf{Classical ML Ensembles} (Andaur et al., 2021): Showcased Random Forest and voting ensembles as robust benchmarks for retail stockout prediction on tabular data.
+      \item \textbf{Deep Learning Architectures} (Giaconia \& Chamas, 2023): Utilized massive CNN, Self-Attention, and Temporal Convolutional Networks (TCN) ($>500\text{k}$ parameters) for intraday stockout probability.
+      \item \textbf{Large-Scale Imbalance Handling} (Liu et al., 2025): Benchmarked XGBoost and SMOTE strategies, proving that near-term demand indicators dominate long-term forecasts for stockout events.
+    \end{itemize}
+  \end{block}
+
+  \vspace{0.2cm}
+
+  \begin{block}{Research Utilizing the FreshRetail Dataset}
+    \small
+    \begin{itemize}
+      \item \textbf{Hierarchical Forecasting}: \textit{"A Coupled Hierarchical Architecture for Multi-Granularity Demand Forecasting"} uses this exact dataset to tackle the complex spatial/product hierarchy (City $\rightarrow$ Store $\rightarrow$ SKU).
+      \item \textbf{Censored Demand Bias}: \textit{"When Less Data Is Better: Eliminating Stockout-Induced Bias in Choice Estimation"} explicitly models how stockouts artificially deflate true demand signals in FreshRetail environments.
     \end{itemize}
   \end{block}
 \end{frame}
 
 % ==========================================
-% SLIDE 4: FRESHRETAILNET-50K DATASET OVERVIEW
+% SLIDE 4: DATASET OVERVIEW & PROCESSING
 % ==========================================
-\begin{frame}{FreshRetailNet-50K Dataset Overview}
-  \small
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Dataset Scale \& Scope}
-        \begin{itemize}
-          \item \textbf{Volume}: 50,000 store-product pairs across 898 stores.
-          \item \textbf{Timeframe}: 90-day series of highly granular hourly data.
-          \item \textbf{Products}: 865 diverse perishable SKUs.
-        \end{itemize}
-      \end{block}
-    \end{column}
-    
-    \begin{column}{0.48\textwidth}
-      \begin{exampleblock}{Rich Feature Set}
-        \begin{itemize}
-          \item \textbf{Sales \& Stock}: Hourly sale amounts \& exact stock status.
-          \item \textbf{Events}: Discount rates, holiday flags, and activities.
-          \item \textbf{Weather}: Precipitation, temp, humidity, and wind.
-        \end{itemize}
-      \end{exampleblock}
-    \end{column}
-  \end{columns}
-  
-  \vspace{2pt}
-  \begin{alertblock}{Why We Selected This Dataset}
+\begin{frame}{Dataset Overview \& Processing Strategy}
+  \begin{block}{FreshRetailNet-50K Scale \& Scope}
     \begin{itemize}
-      \item \textbf{Pioneering Benchmark}: It is the first large-scale public dataset specifically designed for \textbf{censored demand estimation} (where out-of-stock items hide true customer demand) in the fresh retail domain.
-      \item \textbf{Perishable Goods Focus}: Perfectly captures the unique, rapid intraday volatility of short-shelf-life items, containing $\sim$20\% organically occurring stockout data.
+      \item \textbf{Volume}: 50,000 store-product pairs across 898 stores.
+      \item \textbf{Timeframe}: 90-day series of highly granular hourly data (Chronological Split: First 75 days for Training, Final 15 days for Validation).
     \end{itemize}
-  \end{alertblock}
+  \end{block}
+  
+  \vspace{0.3cm}
+  
+  \begin{exampleblock}{Why We Selected This Dataset}
+    \begin{itemize}
+      \item \textbf{Pioneering Benchmark}: First large-scale public dataset designed for \textbf{censored demand estimation} in fresh retail (where out-of-stock items hide true demand).
+      \item \textbf{Targeted Selection}: We isolated the \textbf{Top 15 SKUs} using a custom ranking formula to focus purely on high-impact, stockout-prone goods and eliminate noise from dormant items.
+    \end{itemize}
+  \end{exampleblock}
 \end{frame}
 
 % ==========================================
-% SLIDE 5: DATASET & SKU SELECTION STRATEGY
+% SLIDE 5: FEATURE ENGINEERING & ATTRIBUTES
 % ==========================================
-\begin{frame}{Data Selection \& Splitting Strategy}
+\begin{frame}{Feature Engineering \& Data Attributes}
   \begin{columns}[T]
     \begin{column}{0.48\textwidth}
-      \begin{block}{Unit of Analysis \& Filtering}
+      \begin{block}{Raw Data Attributes}
         \begin{itemize}
-          \item \textbf{Target Grain}: Predicted at the level of $\text{city\_id} + \text{store\_id} + \text{product\_id}$.
-          \item \textbf{Filtering Logic}: Fresh retail datasets contain thousands of dormant items. We select the \textbf{Top 15 SKUs} to focus on high-impact, stockout-prone goods.
+          \item \textbf{Core Sales}: Hourly sale amounts (\texttt{hours\_sale}) and daily volume (\texttt{sale\_amount}).
+          \item \textbf{Target Variable}: 24-dimensional binary stock status vector (\texttt{hours\_stock\_status}) covering 6 AM -- 10 PM.
+          \item \textbf{External Context}: Weather (precipitation, temp, humidity), discount rates, and holiday/activity flags.
         \end{itemize}
-      \end{block}
-      
-      \begin{block}{SKU Statistical Ranking Formula}
-        \small
-        $\text{Score} = 0.40 \times \text{Sales} + 0.25 \times \text{Stockout Hours}$\\
-        $+ 0.20 \times \text{Stockout Days} + 0.15 \times \text{Sales Std}$
       \end{block}
     \end{column}
     
     \begin{column}{0.48\textwidth}
-      \begin{exampleblock}{Train/Validation Split}
+      \begin{exampleblock}{Engineered Lag \& Temporal Features}
         \begin{itemize}
-          \item \textbf{Chronological Split}: Strict temporal separation to prevent data leakage.
-          \item \textbf{Training Set}: Historical data up to $T_{\max} - 15$ days ($\sim 2.5$ months).
-          \item \textbf{Validation Set}: Final 15 days of data.
-          \item \textbf{Standardization}: \texttt{StandardScaler} fitted strictly on the training set to prevent lookahead bias.
-        \end{itemize}
-      \end{exampleblock}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-% ==========================================
-% SLIDE 5: HOURLY VS DAILY FORECASTING PARADIGM
-% ==========================================
-\begin{frame}{Hourly vs. Daily Forecasting Paradigm}
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \begin{alertblock}{Traditional Daily Aggregation Paradigm}
-        \begin{itemize}
-          \item \textbf{Input}: $L=14$ days of historical daily metrics.
-          \item \textbf{Output}: 1 scalar value (Total expected daily sales or binary stockout flag).
-          \item \textbf{Loss of Information}: Store managers cannot determine \emph{when} replenishment must occur.
-        \end{itemize}
-      \end{alertblock}
-    \end{column}
-    
-    \begin{column}{0.48\textwidth}
-      \begin{exampleblock}{Our 24-Hour Hourly Binary Paradigm}
-        \begin{itemize}
-          \item \textbf{Input}: $L=14$ days of SKU-store daily feature vectors.
-          \item \textbf{Output}: 24 binary probabilities $\hat{\mathbf{Y}} \in [0, 1]^{24}$.
-          \item \textbf{Actionable Insight}: Identifies peak risk hours (e.g. 11 AM lunch rush \& 6 PM evening peak) for proactive restocking.
+          \item \textbf{Historical Lags}: Lag-1 and Lag-2 OOS indicators (most critical predictors for near-term forecasting).
+          \item \textbf{Rolling Demand}: 3-day and 7-day rolling sales averages, combined with momentum indicators to capture intraday velocity.
+          \item \textbf{Temporal Encoding}: Cyclical sinusoidal encodings for hour-of-day and day-of-week to map seasonal trends.
         \end{itemize}
       \end{exampleblock}
     \end{column}
