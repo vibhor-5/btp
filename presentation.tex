@@ -97,21 +97,33 @@
 % SLIDE 4: DATASET OVERVIEW & PROCESSING
 % ==========================================
 \begin{frame}{Dataset Overview \& Processing Strategy}
-  \begin{block}{FreshRetailNet-50K Scale \& Scope}
-    \begin{itemize}
-      \item \textbf{Volume}: 50,000 store-product pairs across 898 stores.
-      \item \textbf{Timeframe}: 90-day series of highly granular hourly data (Chronological Split: First 75 days for Training, Final 15 days for Validation).
-    \end{itemize}
-  \end{block}
-  
-  \vspace{0.3cm}
-  
-  \begin{exampleblock}{Why We Selected This Dataset}
-    \begin{itemize}
-      \item \textbf{Pioneering Benchmark}: First large-scale public dataset designed for \textbf{censored demand estimation} in fresh retail (where out-of-stock items hide true demand).
-      \item \textbf{Targeted Selection}: We isolated the \textbf{Top 15 SKUs} using a custom ranking formula to focus purely on high-impact, stockout-prone goods and eliminate noise from dormant items.
-    \end{itemize}
-  \end{exampleblock}
+  \begin{columns}[c]
+    \begin{column}{0.48\textwidth}
+      \centering
+      \includegraphics[width=\textwidth,height=4.6cm,keepaspectratio]{images/stockout_distribution_analysis.png}\\
+      \vspace{2pt}
+      \tiny{FreshRetailNet-50K Stockout Distribution across 865 SKUs}
+    \end{column}
+    
+    \begin{column}{0.50\textwidth}
+      \begin{block}{FreshRetailNet-50K Scale \& Scope}
+        \small
+        \begin{itemize}
+          \item \textbf{Volume}: 50,000 store-product pairs across 898 stores.
+          \item \textbf{Timeframe}: 90-day series of granular hourly data (75d Train / 15d Val).
+          \item \textbf{Feature Types}: Includes sales history, stockout status, promotions, weather metrics, calendar signals, and momentum streaks.
+        \end{itemize}
+      \end{block}
+      
+      \begin{exampleblock}{Why We Selected This Dataset}
+        \small
+        \begin{itemize}
+          \item \textbf{Pioneering Benchmark}: Designed for \textbf{censored demand estimation} in fresh retail (where out-of-stock items hide true demand).
+          \item \textbf{Targeted Selection}: Isolated the \textbf{Top 15 SKUs} using a custom ranking formula to focus on high-impact goods and eliminate noise.
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 % ==========================================
@@ -288,31 +300,9 @@
 \end{frame}
 
 % ==========================================
-% SLIDE 12: DIAGRAMMATIC REPRESENTATION OF DLINEAR ARCHITECTURE
+% SLIDE 12: COMPARATIVE ANALYSIS
 % ==========================================
-\begin{frame}{Architectural Schematic: Multi-Kernel \& Slot DLinear}
-  \begin{columns}[T]
-    \begin{column}{0.62\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{images/dlinear_architecture_diagram.png}
-    \end{column}
-    
-    \begin{column}{0.35\textwidth}
-      \begin{block}{Core Mechanism}
-        \begin{itemize}
-          \item \textbf{Trend Stream}: Multi-kernel moving average pooling ($k \in \{3, 5, 7\}$) + GELU bottleneck.
-          \item \textbf{Seasonal Stream}: High-frequency residual stockout shocks ($X - X_{\text{trend}}$).
-          \item \textbf{24 Slot Heads}: $W_1, \dots, W_{24}$ dedicated projections resolve inter-hour gradient conflicts.
-        \end{itemize}
-      \end{block}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-% ==========================================
-% SLIDE 12: MASTER EMPIRICAL VALIDATION LEADERBOARD
-% ==========================================
-\begin{frame}{Master Empirical Validation Leaderboard}
+\begin{frame}{Comparative Analysis}
   \centering
   \small
   \begin{tabular}{llccccc}
@@ -325,38 +315,41 @@
     4 & Hourly Slot-Specific DLinear & Linear (24 Heads) & 6,744 & \textbf{0.8058} & 88.02\% & 4.23 \\
     5 & Standard Linear DLinear & Linear (Decomp) & 6,768 & \textbf{0.7932} & 87.44\% & 4.28 \\
     6 & Dual-Stream Inventory Shortcut & LSTM Family & 4,600 & \textbf{0.7926} & 80.79\% & 3.96 \\
-    \rowcolor{blue!10} \textbf{Base} & \textbf{Best Normal LSTM (h=32)} & Normal LSTM & 5,912 & \textbf{0.7897} & 81.29\% & 4.31 \\
-    7 & Feature-Reduced Standard LSTM & Normal LSTM & 19,992 & 0.7880 & 81.60\% & 4.58 \\
-    8 & Baseline Standard LSTM (h=96) & Normal LSTM & 44,952 & 0.7852 & 80.40\% & 4.67 \\
-    9 & Vanilla Simple RNN (h=64) & RNN Family & 14,744 & 0.7750 & 81.02\% & 4.23 \\
-    10 & PatchTST Patch Linear & Transformer & 285,624 & 0.7540 & 81.90\% & 4.16 \\
+    \rowcolor{blue!10} 7 & Best Normal LSTM (h=32) & Normal LSTM & 5,912 & \textbf{0.7897} & 81.29\% & 4.31 \\
+    8 & Feature-Reduced Standard LSTM & Normal LSTM & 19,992 & 0.7880 & 81.60\% & 4.58 \\
+    9 & Baseline Standard LSTM (h=96) & Normal LSTM & 44,952 & 0.7852 & 80.40\% & 4.67 \\
+    10 & CNN-Attention-TCN (Giaconia et al., 2023) & Deep CNN-TCN & 504,088 & 0.7771 & 85.45\% & 4.71 \\
+    11 & Vanilla Simple RNN (h=64) & RNN Family & 14,744 & 0.7750 & 81.02\% & 4.23 \\
+    12 & PatchTST Patch Linear & Transformer & 285,624 & 0.7540 & 81.90\% & 4.16 \\
+    13 & XGBoost + SMOTE (Liu et al., 2025) & GBDT / Resample & 19,200 & 0.6841 & -- & -- \\
+    14 & Classic Ensemble (Andaur et al., 2021) & ML Ensemble & 3,000 & 0.6203 & -- & -- \\
     \bottomrule
   \end{tabular}
 \end{frame}
 
 % ==========================================
-% SLIDE 13: CONCLUSION & FUTURE SCOPE
+% SLIDE 13: CONCLUSION AND FUTURE SCOPE
 % ==========================================
-\begin{frame}{Conclusion \& Operational Deployment Takeaways}
+\begin{frame}{Conclusion and Future Scope}
   \begin{columns}[T]
     \begin{column}{0.48\textwidth}
-      \begin{block}{Key Architectural Takeaways}
-        \begin{enumerate}
-          \item \textbf{Non-Linearity Boosts DLinear}: GELU bottlenecks boost DLinear F1 to \textbf{0.8083} and Recall to a record \textbf{91.37\%}.
-          \item \textbf{New All-Time Peak F1}: Multi-Kernel Non-Linear DLinear sets the highest F1-Score of \textbf{0.8156} and lowest MAE of \textbf{3.75 hours}.
-          \item \textbf{Feature Decoupling \& Slot Heads}: Resolves inter-hour gradient noise and temporal cross-talk.
-        \end{enumerate}
+      \begin{block}{Key Conclusions}
+        \begin{itemize}
+          \item \textbf{Lightweight Linear Decompositions Win}: DLinear variants (13k--42k params) outperform heavy Transformers ($>280\text{k}$ params) and deep CNN-TCN models ($>500\text{k}$ params).
+          \item \textbf{Dedicated 24 Slot Heads}: Resolves inter-hour gradient conflicts across operating store hours (+0.0161 F1 boost).
+          \item \textbf{GELU Non-Linearity Bottleneck}: Captures non-linear inventory step-functions, achieving peak \textbf{0.8156 F1} and \textbf{91.37\% Stockout Recall}.
+        \end{itemize}
       \end{block}
     \end{column}
     
     \begin{column}{0.48\textwidth}
-      \begin{block}{Deployment Recommendations}
+      \begin{exampleblock}{Future Scope}
         \begin{itemize}
-          \item \textbf{Primary Production Deployment}: \textbf{Multi-Kernel Non-Linear DLinear} (0.8156 F1, 3.75h MAE, 42.3k params).
-          \item \textbf{Maximum Risk Mitigation}: \textbf{Non-Linear GELU DLinear} (91.37\% Stockout Recall).
-          \item \textbf{Future Scope}: Incorporate real-time intraday point-of-sale stream updates for dynamic threshold adjustment.
+          \item \textbf{Intraday Streaming Data}: Incorporate real-time point-of-sale transaction streams for dynamic intra-day stockout threshold adjustments.
+          \item \textbf{Spatial-Store Hierarchy}: Scale hourly slot projections across regional warehouse clusters for multi-echelon inventory replenishment.
+          \item \textbf{Censored Demand Modeling}: Integrate explicit choice estimation to unbias true demand during zero-stock hours.
         \end{itemize}
-      \end{block}
+      \end{exampleblock}
     \end{column}
   \end{columns}
 \end{frame}
