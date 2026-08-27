@@ -1,0 +1,135 @@
+\chapter{System Architecture and Methodology}
+\label{chap:methodology}
+
+This chapter details the architectural engineering undertaken to adapt sequence models specifically for the FreshRetailNet-50K high-frequency stockout task. Building upon the baseline Vanilla LSTM, we systematically optimized the feature inputs and introduced novel routing mechanics, culminating in our primary recurrent contribution: the Dual-Stream Inventory Shortcut LSTM.
+
+\section{LSTM Complexity Ablation and Feature Engineering}
+
+A fundamental question early in our methodology was whether a heavily parameterized LSTM (96 hidden units, 13 features, 44K+ parameters) was strictly necessary for a relatively short 14-day chronological window. Over-parameterization in retail datasets often leads to noise memorization rather than generalized temporal learning. To investigate this, we conducted an exhaustive ablation study, systematically reducing both the model's hidden capacity and the input feature space.
+
+\begin{table}[ht]
+\centering
+\caption{LSTM Complexity and Feature Ablation Results}
+\label{tab:lstm_ablation}
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Experiment} & \textbf{Hidden Size} & \textbf{Window (Days)} & \textbf{Features} & \textbf{Parameters} & \textbf{F1-Score} \\
+\midrule
+Standard LSTM & 96 & 14 & 13 & 44,952 & 0.785 \\
+Compact LSTM & 64 & 14 & 13 & 21,784 & 0.771 \\
+Compact LSTM & 32 & 14 & 13 & 6,808 & 0.753 \\
+Short-window LSTM & 64 & 10 & 13 & 21,784 & 0.763 \\
+Short-window LSTM & 64 & 7 & 13 & 21,784 & 0.776 \\
+Feature-reduced LSTM & 64 & 14 & 6 & 19,992 & 0.788 \\
+Feature-reduced LSTM & 32 & 14 & 6 & 5,912 & 0.790 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ablation results (Table \ref{tab:lstm_ablation}) revealed a critical insight: simply shrinking the hidden size (from 96 to 32) while retaining all 13 features severely degraded performance (F1 dropped from 0.785 to 0.753). The network lacked the internal capacity to untangle the noisy variables. However, when we actively pruned the input vector to a highly curated set of just 6 essential features, performance rebounded and actually surpassed the baseline. 
+
+The optimized 6-feature vector consisted of:
+\begin{itemize}
+    \item \textbf{Demand Indicators:} \texttt{sale\_amount}, \texttt{discount}, \texttt{holiday\_flag}, \texttt{hours\_sale\_sum}
+    \item \textbf{Inventory Reality:} \texttt{stock\_hour6\_22\_cnt}, \texttt{hours\_stock\_status\_sum}
+\end{itemize}
+
+Utilizing this 6-feature set, a compact 32-hidden-unit LSTM reduced the total parameter count by over 86\% (down to 5,912 parameters) while improving the F1-Score to 0.790. This established a pivotal methodological principle for the remainder of the project: meticulous feature curation is significantly more beneficial for this task than dense mathematical transformations.
+
+\section{The Canonical LSTM Architecture}
+
+With the optimized feature set defined, we formalized the standard processing pipeline. The architecture unrolls over the 14-day historical window. Each day, the 6-dimensional feature vector is processed by the LSTM cell, updating the hidden state ($h_t$) and cell state ($C_t$). The final hidden state ($h_{14}$) is then passed through a fully connected dense layer to produce the 24 hourly predictions.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 2cm,
+        box/.style={rectangle, draw, thick, minimum width=2.5cm, minimum height=1cm, align=center},
+        arrow/.style={-latex, thick}
+    ]
+    
+    % Nodes
+    \node[box, fill=blue!10] (input) {Input Sequence \\ $X_{t=1 \dots 14} \in \mathbb{R}^{14 \times 6}$};
+    \node[box, fill=green!10, right=of input] (lstm) {LSTM Layer \\ (Hidden Size: 32)};
+    \node[box, fill=orange!10, right=of lstm] (dense) {Dense Linear Head \\ $\mathbb{R}^{32} \rightarrow \mathbb{R}^{24}$};
+    \node[box, fill=red!10, right=of dense] (output) {Predicted Hourly \\ Stock Status ($Y \in \mathbb{R}^{24}$)};
+    
+    % Edges
+    \draw[arrow] (input) -- node[above] {$t=1 \dots 14$} (lstm);
+    \draw[arrow] (lstm) -- node[above] {$h_{14}$} (dense);
+    \draw[arrow] (dense) -- (output);
+    
+    % Internal LSTM loop indication
+    \draw[-latex, thick] (lstm.north) .. controls +(up:0.8cm) and +(right:0.8cm) .. (lstm.east);
+    \node[above=0.8cm of lstm] {Temporal Unrolling};
+    
+    \end{tikzpicture}
+    \caption{The Canonical LSTM processing pipeline for 24-hour stockout prediction.}
+    \label{fig:canonical_lstm}
+\end{figure}
+
+While efficient, this canonical architecture forces the LSTM gates to simultaneously track both highly erratic demand spikes (like a sudden promotional flash sale) and the strict, physical constraints of current shelf inventory.
+
+\section{The Dual-Stream Inventory Shortcut Architecture}
+
+To alleviate the conflicting pressures on the LSTM's internal gates, we conceptualized and implemented the \textbf{Dual-Stream Inventory Shortcut LSTM}. This architecture fundamentally alters the data routing mechanism.
+
+\subsection{Architectural Separation (Dual-Streaming)}
+We physically separated the 6 optimized features into two distinct logical domains: a Demand Stream (4 features) and an Inventory Stream (2 features). Each stream is processed by a completely independent, dedicated LSTM branch (with a hidden size of 16). This isolation ensures that erratic sales noise does not mathematically "wash out" the physical reality of the stock levels during the recurrent sequence.
+
+\subsection{The Inventory Shortcut}
+A well-documented limitation of all recurrent models is signal dilution over time. Even across a short 14-day window, initial states fade. More critically, for stockout prediction, the single most important variable determining tomorrow's stock availability is \textit{today's} (Day 14) ending inventory status. If the model dilutes this signal through the recurrent gates, it loses predictive accuracy.
+
+To solve this, we engineered the \textbf{Inventory Shortcut}. This connection physically extracts the 2 inventory features from the very last day in the sequence ($t=14$) and bypasses the recurrent layers entirely. These raw features are concatenated directly with the final hidden states of the Demand and Inventory LSTMs just before the final fusion layer.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 1cm,
+        box/.style={rectangle, draw, thick, minimum width=2.5cm, minimum height=1cm, align=center},
+        arrow/.style={-latex, thick}
+    ]
+    
+    % Inputs
+    \node[box, fill=blue!10] (demand_in) {Demand Features \\ $X_{demand} \in \mathbb{R}^{14 \times 4}$};
+    \node[box, fill=blue!10, below=1.5cm of demand_in] (inv_in) {Inventory Features \\ $X_{inv} \in \mathbb{R}^{14 \times 2}$};
+    
+    % LSTMs
+    \node[box, fill=green!10, right=1.5cm of demand_in] (demand_lstm) {Demand LSTM \\ $h = 16$};
+    \node[box, fill=green!10, right=1.5cm of inv_in] (inv_lstm) {Inventory LSTM \\ $h = 16$};
+    
+    % Concat and Output
+    \node[box, fill=yellow!20, right=2cm of demand_lstm, yshift=-1.25cm] (concat) {Concatenation \\ Fusion Layer};
+    \node[box, fill=orange!10, right=1.5cm of concat] (dense) {Linear Head};
+    \node[box, fill=red!10, right=1.5cm of dense] (output) {$Y \in \mathbb{R}^{24}$};
+    
+    % Standard Paths
+    \draw[arrow] (demand_in) -- (demand_lstm);
+    \draw[arrow] (inv_in) -- (inv_lstm);
+    \draw[arrow] (demand_lstm.east) -- ++(1,0) |- (concat.160);
+    \draw[arrow] (inv_lstm.east) -- ++(1,0) |- (concat.200);
+    
+    % Shortcut Path
+    \draw[arrow, dashed, thick, blue] (inv_in.south) -- ++(0,-0.8) -| node[pos=0.25, above, text=blue, font=\small] {Inventory Shortcut (Extract $t=14$)} (concat.south);
+    
+    % Final Paths
+    \draw[arrow] (concat) -- (dense);
+    \draw[arrow] (dense) -- (output);
+    
+    \end{tikzpicture}
+    \caption{The Dual-Stream Inventory Shortcut LSTM Architecture. Notice the dashed shortcut routing Day 14 inventory directly to the fusion layer.}
+    \label{fig:dual_stream_lstm}
+\end{figure}
+
+\subsection{Performance Evaluation}
+
+This bespoke architecture proved highly successful. It reduced the parameter count to an incredibly lean 4,600 trainable parameters while achieving a highly robust five-seed mean F1-Score of $\approx 0.7941 \pm 0.0040$. 
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../btp-repo/docs/images/dualstream_vs_normal_lstm_comparison.png}
+    \caption{Empirical comparison validating the superiority of the Dual-Stream Shortcut architecture over standard configurations.}
+    \label{fig:dual_stream_comparison}
+\end{figure}
+
+As visualized in Figure \ref{fig:dual_stream_comparison}, the structural separation of demand and inventory, coupled with the undiluted latest-day shortcut, consistently out-performed traditional recurrent bottlenecks, making it our definitive proposed recurrent methodology.

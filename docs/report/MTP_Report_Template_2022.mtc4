@@ -1,0 +1,6 @@
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {2.1}Traditional Inventory Forecasting}{\reset@font\mtcSfont 3}{section.2.1}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {2.2}The Deep Learning Shift in Time-Series}{\reset@font\mtcSfont 3}{section.2.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.2.1}Recurrent Neural Networks (RNNs) and LSTMs}{\reset@font\mtcSSfont 4}{subsection.2.2.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.2.2}Transformers and Linear Alternatives}{\reset@font\mtcSSfont 4}{subsection.2.2.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.2.3}Retail Aggregation Limitations}{\reset@font\mtcSSfont 4}{subsection.2.2.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {2.3}Recent Advances in Stockout Prediction}{\reset@font\mtcSfont 4}{section.2.3}}

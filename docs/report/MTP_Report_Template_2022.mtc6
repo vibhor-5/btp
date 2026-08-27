@@ -1,0 +1,12 @@
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.1}Baseline Analysis}{\reset@font\mtcSfont 8}{section.4.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.1.1}Baseline SimpleRNN}{\reset@font\mtcSSfont 8}{subsection.4.1.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.1.2}Baseline Vanilla and Canonical LSTM}{\reset@font\mtcSSfont 9}{subsection.4.1.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.1.3}Baseline Transformers}{\reset@font\mtcSSfont 9}{subsection.4.1.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.2}Figuring Out Feature Importance}{\reset@font\mtcSfont 10}{section.4.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.3}Building Our Custom LSTMs}{\reset@font\mtcSfont 12}{section.4.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.3.1}Our Final Custom LSTM: Dual-Stream Inventory Shortcut}{\reset@font\mtcSSfont 12}{subsection.4.3.1}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4.4}DLinear (Decomposition Linear) Architectures}{\reset@font\mtcSfont 14}{section.4.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.1}Standard DLinear}{\reset@font\mtcSSfont 14}{subsection.4.4.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.2}Hourly Slot-Specific DLinear}{\reset@font\mtcSSfont 14}{subsection.4.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.3}Multi-Kernel DLinear}{\reset@font\mtcSSfont 14}{subsection.4.4.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4.4}Non-Linear DLinear (GELU)}{\reset@font\mtcSSfont 15}{subsection.4.4.4}}

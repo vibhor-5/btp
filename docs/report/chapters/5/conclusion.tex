@@ -1,0 +1,29 @@
+\chapter{Conclusion}
+\label{chap:conclusion}
+
+This project addressed the critical and operationally demanding challenge of forecasting intra-day stockouts in high-frequency fresh retail supply chains. By transitioning from daily aggregate modeling (e.g., traditional supply/backorder research) to store-level, hour-wise granular prediction using the FreshRetailNet-50K dataset, we tackled a genuine industry problem where short-term inventory availability directly dictates customer satisfaction and revenue realization.
+
+\section{Summary of Research Progression}
+
+Our research followed a rigorous, empirical progression through increasingly sophisticated architectural paradigms:
+\begin{enumerate}
+    \item \textbf{C1/Backorder Research \& Tabular Baseline:} Early investigations and a PyTorch Tabular Transformer (55.8\% accuracy) demonstrated that non-sequential approaches fail to capture temporal stock deterioration.
+    \item \textbf{Vanilla RNN and LSTM:} The transition to explicit chronological windowing established our 44K-parameter Vanilla LSTM (F1: 0.785) as a robust baseline.
+    \item \textbf{RNN Variations \& LSTM Ablation:} Systematic experiments proved that aggressive feature reduction (to 6 curated features) was significantly more effective than arbitrarily shrinking recurrent hidden sizes.
+    \item \textbf{Custom Architectural Interventions:} We engineered the \textbf{Dual-Stream Inventory Shortcut LSTM}. By isolating demand features from inventory features, and crucially, routing the latest (Day 14) inventory status directly to the fusion layer, we overcame recurrent signal dilution. This model achieved an F1 of 0.7941 with only 4,600 parameters, representing our primary architectural contribution to recurrent retail forecasting.
+    \item \textbf{Linear State-of-the-Art (DLinear):} In a standardized benchmark setting, we introduced Decomposition Linear (DLinear) models. The \textbf{Multi-Kernel DLinear} ultimately proved to be the most effective architecture. 
+\end{enumerate}
+
+\section{Final Concluding Model}
+
+While the Dual-Stream Inventory Shortcut LSTM stands as our primary recurrent innovation—purpose-built for this task—the \textbf{Multi-Kernel DLinear} is our concluding final model for deployment. 
+
+The DLinear architecture is fundamentally superior for this specific fresh retail context because:
+\begin{itemize}
+    \item \textbf{Lightweight Efficiency:} It operates entirely without recurrent hidden states, cell states, or attention matrices, making inference computationally trivial.
+    \item \textbf{Parameter Economy:} It requires significantly fewer parameters than Transformer-based approaches while matching or exceeding their performance.
+    \item \textbf{Interpretability:} Trend and residual decomposition is natively explainable, which is critical for supply chain managers who must trust the model's alerts.
+    \item \textbf{Short-Window Supremacy:} It is exceptionally well-suited to our restricted 14-day input window and limited dataset history, achieving the highest overall Hour-Level F1-Score (\textbf{0.8131}).
+\end{itemize}
+
+By predicting the exact hour a shelf will empty, this forecasting pipeline enables fresh retail managers to schedule preemptive intra-day replenishments, directly mitigating spoilage while maximizing supply availability.

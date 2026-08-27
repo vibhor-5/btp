@@ -1,0 +1,22 @@
+\chapter{Introduction}
+\label{chap:intro}
+
+\section{Introduction}
+
+The way we shop has changed a lot recently. People are moving away from traditional physical stores and switching to ultra-fast delivery services. These fast grocery delivery services (often called "quick commerce") promise to get items to your door in ten to thirty minutes. To make this happen, companies need a large network of small, local warehouses, often known as "dark stores."
+
+In this fast-paced setup, managing inventory is no longer just about saving money; it is the biggest challenge to keeping the business running and customers happy. Traditional retail forecasting systems usually look at sales on a daily or weekly basis. If a regular supermarket runs out of milk at 6:00 PM but restocks it by 7:00 AM the next day, the system only sees that a lot of milk was sold that day. It completely misses the fact that the shelf was empty for hours.
+
+However, in quick commerce, if an item is out of stock for four hours during the evening rush, customers cannot finish their orders. They will likely abandon their carts and switch to a competitor immediately. Because of this, a computer model that just predicts how much will be sold tomorrow is not good enough. What we really need is a detailed, hour-by-hour forecasting tool that predicts exactly when a specific shelf will run empty.
+
+Our team explored how to build and improve sequential deep learning models specifically to solve this high-frequency, store-level stockout problem. Using the FreshRetailNet-50K dataset, we moved away from traditional daily supply research and focused on making highly specific, hourly predictions.
+
+\section{Motivation}
+
+The main motivation for our project comes from the huge financial and operational problems in fresh grocery delivery. Fresh produce and perishable goods go bad very quickly. If store managers stock too much to avoid running out, a lot of food spoils and gets wasted. On the other hand, if they stock too little to prevent spoilage, they risk running out of stock during the day, which means losing customers forever in the quick commerce world.
+
+Early in our research, our team tried using traditional inventory forecasting methods. While these classic models laid the groundwork, they did not fit the reality of modern dark stores. They treated time as a simple, unchanging variable and assumed sales happened evenly throughout the day.
+
+When we tested a basic Tabular Transformer model on the FreshRetailNet-50K dataset (using 96 hidden dimensions, 2 transformer layers, and 4 attention heads), it only achieved an accuracy of 55.83\% and an AUC of 0.5257—which is barely better than guessing randomly. This poor performance clearly showed our team that predicting stockouts is not a simple classification problem. It is a complex sequence problem that relies on the timeline of events, shopping cycles, and everyday operational noise.
+
+Because of this, we were motivated to drop static models and use dynamic time-series architectures instead. We looked into everything from Recurrent Neural Networks (RNNs) and Long Short-Term Memory (LSTMs) to Decomposition Linear (DLinear) models, hoping to capture exactly how and when inventory runs out.

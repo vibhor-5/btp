@@ -1,0 +1,63 @@
+
+\begin{abstract}
+	%\begin{center}
+	%	\textit{\}
+	%\end{center}
+	\noindent \textit{Recognition of human's emotion through facial expressions has many important applications ranging from behaviour recognition, human-computer interaction, security, psychology, and so on. Recognition of facial expressions from non-frontal faces, and recognition from different views are two important research challenges. As different views of a facial expression are just different manifestations of the expression, the information embedded in different views can be effectively utilized for facial expression recognition (FER). Motivated from the above mentioned facts, we proposed to extract facial informative regions and discriminative shared space for facial expression recognition.}
+	\par \textit{Extraction of discriminative features for different facial expressions is a key step in facial expression recognition. However, most discriminative facial features can be extracted from the informative regions of a face. In this view, the importance of different facial sub-regions are investigated, and subsequently the facial sub-regions which have significant contributions in different facial expressions are only considered for feature extraction. Furthermore, a weighted-projection based local binary pattern (WPLBP) feature is proposed. For this, texture features are extracted from informative regions and they are weighted on the basis of their importance. Finally, an efficient face model is derived from the informative regions of a face. The proposed face model has several advantages, and it gives better performance than other existing face models.}
+	%In this view a projection analysis-based approach is proposed where features from different sub-regions of an expressive face image are projected to the corresponding sub-regions of a neutral face image. Subsequently, the magnitude of the projection error used as a parameter which decides the degree of importance of that particular facial sub-region.
+	\par \textit{Next, we proposed an Uncorrelated Multi-view Discriminant Locality Preserving Projection (UMvDLPP) analysis to recognize expressions from multi-view face images. The proposed UMvDLPP first transforms expressions of different views to a common uncorrelated discriminative subspace, and then classification is performed. One of the major advantage of our proposed scheme is that classifiers need not be learned separately for all the views. Moreover, it can effectively handle multi-modal characteristics of multi-view data than the existing learning-based methods.}
+	%which learns a view-specific transformation matrices that projects samples from each view to a common uncorrelated discriminative subspace. The proposed objective function of UMvDLPP minimizes the local geometric structure of the intra-class of both intra-view and inter-view onto the common space. Additionally, UMvDLPP also maximizes local-between-class-scatter-matrix of intra-view and inter-view of the common space.
+	\par \textit{Discriminative shared Gaussian process latent variable model (DS-GPLVM) \cite{eleftheriadis2015discriminative} can give better performance in the multi-view FER than the existing multi-view linear and non-linear learning-based methods.  Laplacian-based prior used in DS-GPLVM only captures topological structure of data space without the inter-class separability of the data, and hence, the obtained latent space is not optimal. So, an efficient prior is proposed, which not only depends on the topological structure of the intra-class data, but also on the local-between-class-scatter-matrix of the data onto the latent manifold. The proposed approach employs a hierarchical framework, which is termed as multi-level uncorrelated DS-GPLVM (ML-UDSGPLVM). In this framework, expressions are first divided into three sub-categories. Subsequently, each of the sub-categories are further classified to identify the constituent basic expressions. Hence, first level of ML-UDSGPLVM i.e., 1-UDSGPLVM is learned for classification of different categories, and then  a separate 2-UDSGPLVM is learned for recognizing constituent expressions of each of the categories. Extensive experiments on a standard dataset show that our proposed method performs better than the existing multi-view FER methods. This improvement is due to the fact that the proposed method enhances the discrimination between the classes more effectively, and classifies expressions category-wise followed by classification of the basic expressions embedded in each of the sub-categories (hierarchical approach).}
+	%\end{center}
+\end{abstract}
+
+
+%\begin{abstract}
+%%\begin{abstractslong}
+%\vspace{-0.5cm}	
+%\par \textit{In general, captured human expressions are not frontal either due to head-movements or variable camera position. Also, extraction of discriminative facial features from non-frontal face images are challenging due to occlusion of different facial sub-regions encountered by the above mentioned reasons. Moreover, different views of facial expressions are just different manifestation of the same respective facial expressions. Therefore, informations contained in different views of facial expression can be exploited to build a robust facial expression recognition (FER) system. Motivated from the above research problems, this thesis presents the three major contributions of our research work.}
+%
+%\par \textit{Feature extraction is a key step in facial expression recognition system, where the objective is to extract distinct features over different facial expressions. However, discriminative facial features can only be extracted from the informative regions of the face. Hence in the first part of our contribution, we analyzed importance of different facial sub-regions using projection-based approach. The proposed method basically projects features from a sub-region of an expressive face image to the corresponding features of a neutral face image. Subsequently, the magnitude of the projection error used as a parameter which decides the degree of importance of that particular facial sub-region. Finally, a weighted-projection based local binary pattern (WPLBP) feature is proposed to perform FER from the frontal face image. Subsequently, by exploiting informations from the informative regions of a face we proposed an efficient face model which can extract features only from the informative regions of a face.}
+%
+%\par \textit{Our next two major contributions are mainly intended to recognize facial expressions from multi-view face images. More specifically, in the second phase of our work, we proposed an Uncorrelated Multi-view Discriminant Locality Preserving Projection (UMvDLPP)-based linear approach which seeks to learn a view-specific transformation matrices that projects samples from each view to a common uncorrelated discriminative subspace. The proposed objective function of UMvDLPP minimizes the local geometric structure of the intra-class of both intra-view and inter-view onto the common space. Additionally, UMvDLPP also maximizes local-between-class-scatter-matrix of intra-view and inter-view of the common space. The major advantage of UMvDLPP over the state-of-the-art multi-view methods is that it can handle the multi-modal characteristics of data which is inherently present in multi-view facial images, and hence the proposed method effectively more suitable for multi-view facial expression recognition problem.}
+%
+%\par \textit{ The third contribution of this thesis is inspired by discriminative shared Gaussian process latent variable model (DS-GPLVM) which shows improved performance over existing multi-view linear and non-linear learning-based methods. The Laplacian-based prior were exploited in DS-GPLVM that captures only topological structure of data space onto the latent space without regards to the inter-class separability of the data. Hence, obtained DS-GPLVM latent space might be suboptimal for classification. To this end, we proposed multi-level uncorrelated  DS-GPLVM (ML-UDSGPLVM) which seeks for a shared uncorrelated discriminative latent space obtained from multiple observation spaces. The proposed approach employs an hierarchical framework to obtain the optimal performance of FER system. Not only that, we introduced an additional term, called local-between-class-centering-matrix, in the existing Laplacian-based prior to overcome the shortcoming of DS-GPLVM approach. Under the proposed setting, firstly, expressions are divided into three category based on the part of the face which contribute most towards the expression. Each expression category comprises of two basic expressions. Furthermore, at the first level of FER system, the proposed ML-UDSGPLVM (1-UDSGPLVM) is learned for three class expression category followed by recognizing basic expressions under each expression category through a separate ML-UDSGPLVM (2-UDSGPLVM) learned for each expression category. We performed an extensive experiments on BU3DFE dataset to validate our proposed method.}
+%
+%	
+%	
+%	
+%
+%%\clearpage
+%%The  major contributions of the work reported in this thesis includes,
+%%
+%%\begin{enumerate}
+%%  \item Denoising using Higher Order Statistics in Wavelet
+%%Subbands.
+%%  \item Denoising based on Kurtosis based Noise Variance and Multiscale Energy.
+%%  \item Multiscale Principal Component Analysis (MSPCA) for
+%%multichannel ECG processing and ECG data compression.
+%%  \item Clinical Entropy based Principal Component Analysis (PCA) and MSPCA for multichannel ECG Signals.
+%%\end{enumerate}
+%%
+%%The other contributions are,
+%%
+%%\begin{enumerate}
+%%\item Multiscale multivariate energy
+%%contribution efficiency for multichannel ECG.
+%%\item Denoising multichannel ECG using Multiscale PCA.
+%%\item Quality controlled denoising of multichannel ECG signals
+%%using Multiscale PCA.
+%%\item Multiscale Distortion Measure for Multichannel
+%%Electrocardiogram.
+%%\end{enumerate}
+%%\vspace{1cm} \textbf{Keywords:} Multichannel electrocardiogram,
+%%Denoising, Principal Component Analysis, Multiscale Principal
+%%Component Analysis, Distortion Measure, PRD, WWPRD, WEDD.
+%
+%
+%
+%%\end{abstractslong}
+%
+%
+%\end{abstract}

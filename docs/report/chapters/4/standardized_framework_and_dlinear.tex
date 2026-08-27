@@ -1,0 +1,150 @@
+\chapter{Results}
+\label{chap:results}
+
+As the project evolved, it became imperative to benchmark our custom recurrent architectures against modern state-of-the-art linear models. This chapter outlines the standardized experimental framework used for final evaluation, presents the theoretical architecture of the Decomposition Linear (DLinear) models, and details the final quantitative results.
+
+\section{Standardized Evaluation Framework}
+
+To ensure rigorous comparability across all models, we established a definitive and strictly standardized evaluation framework. This framework eliminated metric inflation caused by data leakage or skewed metric selection:
+\begin{itemize}
+    \item \textbf{Dataset Scope:} Evaluation was constrained to the Top 15 statistically significant store-product series to prevent learning spurious patterns from dead inventory.
+    \item \textbf{Holdout Strategy:} We employed a strict chronological split. The final 15 days of the dataset were held out exclusively as a test set. 
+    \item \textbf{Data Leakage Prevention:} All scaling algorithms (e.g., StandardScaler) were fitted exclusively on the chronological training split.
+    \item \textbf{Optimization:} To address the extreme class imbalance inherent in retail (where out-of-stock hours are rare anomalies), the framework optimized via \textbf{Focal Loss} ($\gamma = 2.0, \alpha = 0.5$) rather than standard Binary Cross-Entropy.
+    \item \textbf{Dynamic Thresholding:} Instead of relying on a static $0.5$ classification threshold, the framework dynamically scanned thresholds from $0.10$ to $0.90$ on a validation set to select the optimal cutoff for F1 maximization.
+\end{itemize}
+
+\section{DLinear (Decomposition Linear) Architectures}
+
+While our Dual-Stream LSTM successfully captured specialized temporal dynamics, recent literature \cite{zeng2023dlinear} demonstrated that lightweight linear models can outperform complex Transformer and RNN architectures on specific short-window time-series tasks. To benchmark our work, we implemented DLinear variants.
+
+\subsection{Standard DLinear}
+
+Standard DLinear operates on a foundational principle of time-series decomposition. It separates the input sequence into two discrete components: a Trend component (extracted via a moving average) and a Seasonal/Residual component (the original sequence minus the trend). 
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1cm and 1.5cm,
+        box/.style={rectangle, draw, thick, minimum width=2.5cm, minimum height=1cm, align=center},
+        arrow/.style={-latex, thick}
+    ]
+    
+    % Input
+    \node[box, fill=blue!10] (input) {Input Sequence \\ $X$};
+    
+    % Decomposition
+    \node[box, fill=gray!20, right=1.5cm of input] (ma) {Moving Average \\ (Trend Extraction)};
+    \node[box, fill=gray!10, below=1cm of ma] (residual) {Subtraction \\ ($X - Trend$)};
+    
+    % Linear Layers
+    \node[box, fill=green!10, right=1.5cm of ma] (linear_trend) {Linear Layer \\ (Trend)};
+    \node[box, fill=green!10, right=1.5cm of residual] (linear_res) {Linear Layer \\ (Residual)};
+    
+    % Output
+    \node[box, fill=yellow!20, right=1.5cm of linear_trend, yshift=-1cm] (add) {Addition \\ (Trend + Residual)};
+    \node[box, fill=red!10, right=1cm of add] (output) {Final Prediction \\ $Y \in \mathbb{R}^{24}$};
+    
+    % Edges
+    \draw[arrow] (input) -- (ma);
+    \draw[arrow] (input) |- (residual);
+    \draw[arrow] (ma) -- node[left] {$-$} (residual);
+    
+    \draw[arrow] (ma) -- (linear_trend);
+    \draw[arrow] (residual) -- (linear_res);
+    
+    \draw[arrow] (linear_trend.east) -- ++(0.5,0) |- (add.160);
+    \draw[arrow] (linear_res.east) -- ++(0.5,0) |- (add.200);
+    
+    \draw[arrow] (add) -- (output);
+    
+    \end{tikzpicture}
+    \caption{The Standard DLinear Architecture. Trend and residual sequences are mapped directly to the output via independent linear layers without recurrent states.}
+    \label{fig:dlinear_arch}
+\end{figure}
+
+As shown in Figure \ref{fig:dlinear_arch}, DLinear directly forecasts both parts using independent linear layers. The forecasts are then summed to produce the final 24 hourly predictions. Crucially, DLinear achieves this without relying on recurrent hidden states or gating mechanisms, making it exceptionally fast and interpretably transparent.
+
+\subsection{Multi-Kernel DLinear}
+
+To further optimize DLinear for the high volatility of retail stockouts, we developed the \textbf{Multi-Kernel DLinear}. Instead of relying on a single moving average kernel to define the "Trend", this architecture utilizes multiple, parallel moving average kernels ($k=3, 5, 7$).
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm and 1cm,
+        box/.style={rectangle, draw, thick, minimum width=2.5cm, minimum height=0.8cm, align=center},
+        arrow/.style={-latex, thick}
+    ]
+    
+    % Input
+    \node[box, fill=blue!10] (input) {Input $X$};
+    
+    % Kernels
+    \node[box, fill=gray!20, right=1.5cm of input, yshift=1.5cm] (ma3) {MA Kernel ($k=3$)};
+    \node[box, fill=gray!20, right=1.5cm of input] (ma5) {MA Kernel ($k=5$)};
+    \node[box, fill=gray!20, right=1.5cm of input, yshift=-1.5cm] (ma7) {MA Kernel ($k=7$)};
+    
+    % Concat
+    \node[box, fill=yellow!20, right=1.5cm of ma5] (concat) {Concatenate Trends};
+    
+    % Linear
+    \node[box, fill=green!10, right=1.5cm of concat] (linear) {Linear Head $\rightarrow Y$};
+    
+    % Edges
+    \draw[arrow] (input.east) -- ++(0.5,0) |- (ma3.west);
+    \draw[arrow] (input) -- (ma5);
+    \draw[arrow] (input.east) -- ++(0.5,0) |- (ma7.west);
+    
+    \draw[arrow] (ma3.east) -- ++(0.5,0) |- (concat.150);
+    \draw[arrow] (ma5) -- (concat);
+    \draw[arrow] (ma7.east) -- ++(0.5,0) |- (concat.210);
+    
+    \draw[arrow] (concat) -- (linear);
+    
+    \end{tikzpicture}
+    \caption{The Multi-Kernel DLinear extraction phase. Multiple kernel sizes capture both rapid volatility and smoother multi-day trends simultaneously.}
+    \label{fig:multi_kernel_dlinear}
+\end{figure}
+
+This multi-scale extraction enables the network to simultaneously capture short-term panic buying (rapid volatility) and slightly longer-term promotional trajectories within the restricted 14-day window.
+
+\section{Final Empirical Results}
+
+We tested our primary recurrent models against several variants of the DLinear architecture. The performance metrics and parameter counts are detailed in Table \ref{tab:dlinear_variants}.
+
+\begin{table}[ht]
+\centering
+\caption{Performance Comparison of Final Evaluated Architectures}
+\label{tab:dlinear_variants}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Architecture} & \textbf{Parameters} & \textbf{Hour-Level F1} \\
+\midrule
+Vanilla LSTM & 44,952 & 0.7850 \\
+Dual-Stream Inventory Shortcut LSTM & 4,600 & 0.7941 \\
+Standard DLinear & 6,768 & 0.7932 \\
+Hourly Slot-Specific DLinear & 6,744 & 0.8058 \\
+Gated Residual DLinear & 18,096 & 0.8124 \\
+\textbf{Multi-Kernel DLinear} & \textbf{13,539} & \textbf{0.8131} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../btp-repo/docs/images/lstm_vs_dlinear_comparison.png}
+    \caption{Final Empirical Comparison: The linear architectures (specifically Multi-Kernel and Gated Residual) systematically outperform the recurrent LSTM bounds.}
+    \label{fig:final_comparison}
+\end{figure}
+
+The empirical results conclusively identified the \textbf{Multi-Kernel DLinear} as the superior model. Achieving a peak F1-Score of \textbf{0.8131} with only 13,539 parameters, it successfully outperformed both our custom Dual-Stream recurrent architecture and all standard baseline architectures (as visualized in Figure \ref{fig:final_comparison}). 
+
+Furthermore, a broader comparison across all tested model families (Figure \ref{fig:family_comparison}) highlights that while recurrent models plateau in this specific environment, linear models offer superior parameter efficiency and overall forecasting accuracy for granular retail sequences.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../btp-repo/docs/images/hourly_f1_vs_params_by_family.png}
+    \caption{Broad comparison across model families, illustrating the parameter-efficiency dominance of DLinear variants on the FreshRetailNet-50K task.}
+    \label{fig:family_comparison}
+\end{figure}

@@ -1,0 +1,36 @@
+\chapter{Thesis Objectives and Deliverables}
+\label{chap:objectives}
+
+To fix the problems with older forecasting models and successfully predict when items will run out of stock during the day, our team set the following clear goals for this project:
+
+\begin{enumerate}
+    \item \textbf{Set up the Forecasting Problem:} We needed to clearly define the stockout problem mathematically. We wanted our model to look at the last 14 days of history (like sales and discounts) and predict an exact 24-hour breakdown of whether a specific store will have enough stock tomorrow.
+    \item \textbf{Test Basic Recurrent Models:} We planned to train basic Vanilla RNN and Vanilla LSTM models first. This helped us see where they struggle and what goes wrong when they try to process messy, real-world retail data.
+    \item \textbf{Build Our Own Custom Model:} We aimed to build a specialized neural network. Our final design, the Dual-Stream Inventory Shortcut LSTM, processes the unpredictable demand data separately from the hard inventory facts, and it makes sure the latest inventory updates are not forgotten.
+    \item \textbf{Compare Against the Latest Linear Models:} We wanted to test our custom LSTMs against newer, lightweight linear models (like DLinear and Multi-Kernel DLinear) using a very strict testing process to see which approach was actually better.
+    \item \textbf{Deliver a Working Solution:} Ultimately, our main goal was to pick one fast, easy-to-understand model (which ended up being the Multi-Kernel DLinear) that gives the most accurate hourly predictions, so it could actually be used in real, fast-paced fulfillment centers.
+\end{enumerate}
+
+\section{Problem Formulation}
+
+To set this up, we take historical retail data $X \in \mathbb{R}^{T \times D}$, where $T=14$ days is the time window we look back on, and $D$ is the number of different features we track. Our goal is to train a function $f: X \rightarrow Y$. 
+
+The target output $Y$ is a 24-dimensional vector that tells us exactly if an item is in stock for every hour of the next day ($T+1$):
+\begin{equation}
+    Y = [y_1, y_2, \dots, y_{24}]^T \quad \text{where} \quad y_i \in \{0, 1\}
+\end{equation}
+In this setup, if $y_i = 1$, it means the item is out of stock during hour $i$, and if $y_i = 0$, it means there is plenty of inventory.
+
+\section{Dataset Overview}
+
+To hit these goals, our team ran all our experiments using the \textbf{FreshRetailNet-50K} dataset. Our mentor provided this data, and it gives a very realistic picture of how modern retail works.
+
+It includes daily records for specific combinations of cities, stores, and products. Importantly, the dataset mixes direct sales numbers with outside factors that affect how people shop:
+
+\begin{itemize}
+    \item \textbf{Sales and Inventory Facts:} Basic numbers like total sales, past stockouts, and daily activity.
+    \item \textbf{Promotions:} Information on discounts or store events that make people buy things faster than usual.
+    \item \textbf{Outside Events:} National holidays and weather conditions that change overall shopping behavior.
+\end{itemize}
+
+By feeding all this information in order, our models learned the difference between normal items selling out over time and items selling out suddenly because of a sale. This dataset paved the way for all the tests we talk about in the next chapters.

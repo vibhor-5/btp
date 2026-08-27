@@ -1,0 +1,76 @@
+\chapter{Results and Conclusion}
+\label{chap:results}
+
+As our project went on, we knew we had to compare our custom LSTM models against the newest linear models to see which was truly better. This chapter explains how we tested everything fairly, shows our final numbers, and gives our overall conclusion.
+
+\section{Standardized Evaluation Framework}
+
+To make sure we were comparing apples to apples, our team set up a very strict testing process. This stopped any model from looking better just because of lucky guesses or messy data:
+
+\begin{itemize}
+    \item \textbf{Dataset Scope:} We only tested the top 15 busiest store-product combinations. This stopped the models from learning useless patterns from items that never sell anyway.
+    \item \textbf{Holdout Strategy:} We used a strict timeline split. We hid the last 15 days of the dataset from the models completely, and only used those days for the final test.
+    \item \textbf{Optimization:} In retail, stockouts don't happen as often as regular sales. To fix this imbalance, we trained the models using \textbf{Focal Loss} instead of standard Binary Cross-Entropy. The Focal Loss is defined mathematically as:
+    \begin{equation}
+        FL(p_t) = -\alpha_t (1 - p_t)^\gamma \log(p_t)
+    \end{equation}
+    where $p_t$ is the model's estimated probability for the stockout class. We configured the focusing parameter $\gamma = 2.0$ and the balancing factor $\alpha = 0.5$.
+    \item \textbf{Dynamic Thresholding:} Instead of just picking a standard 50/50 cutoff for predictions, we had the computer scan all cutoffs from 10\% to 90\% on a practice set to find the perfect spot that maximized the F1-Score.
+\end{itemize}
+
+\section{Final Empirical Results}
+
+We tested our main recurrent models against a few versions of the DLinear architecture (which we talked about in Chapter 4). You can see the final scores and how big each model is in Table \ref{tab:final_variants}.
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Master Empirical Validation Leaderboard}
+  \label{tab:final_variants}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{llccccc}
+    \toprule
+    \textbf{Rank} & \textbf{Architecture Name} & \textbf{Category} & \textbf{Params} & \textbf{F1-Score} & \textbf{Recall} & \textbf{MAE (hrs)} \\
+    \midrule
+    \textbf{1} & \textbf{Multi-Kernel Non-Linear DLinear} & Non-Linear DLinear & 42,339 & \textbf{0.8156} & 87.13\% & \textbf{3.75} \\
+    \textbf{2} & \textbf{Multi-Kernel Linear DLinear} & Linear (Multi-Scale) & 13,539 & \textbf{0.8131} & 85.22\% & 3.86 \\
+    \textbf{3} & \textbf{Non-Linear GELU DLinear} & Non-Linear DLinear & 21,168 & \textbf{0.8083} & \textbf{91.37\%} & 4.20 \\
+    4 & Hourly Slot-Specific DLinear & Linear (24 Heads) & 6,744 & \textbf{0.8058} & 88.02\% & 4.23 \\
+    5 & Standard Linear DLinear & Linear (Decomp) & 6,768 & \textbf{0.7932} & 87.44\% & 4.28 \\
+    6 & Dual-Stream Inventory Shortcut & LSTM Family & 4,600 & \textbf{0.7926} & 80.79\% & 3.96 \\
+    \textbf{Base} & \textbf{Best Normal LSTM (h=32)} & Normal LSTM & 5,912 & \textbf{0.7897} & 81.29\% & 4.31 \\
+    7 & Feature-Reduced Standard LSTM & Normal LSTM & 19,992 & 0.7880 & 81.60\% & 4.58 \\
+    8 & Baseline Standard LSTM (h=96) & Normal LSTM & 44,952 & 0.7852 & 80.40\% & 4.67 \\
+    9 & Vanilla Simple RNN (h=64) & RNN Family & 14,744 & 0.7750 & 81.02\% & 4.23 \\
+    10 & PatchTST Patch Linear & Transformer & 285,624 & 0.7540 & 81.90\% & 4.16 \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../btp-repo/docs/images/nonlinear_dlinear_comparison.png}
+    \caption{Final Empirical Comparison: The linear architectures systematically outperform the recurrent LSTM bounds.}
+    \label{fig:final_comparison}
+\end{figure}
+
+The numbers clearly showed that the \textbf{Multi-Kernel Non-Linear DLinear} was the overall winner. It hit a peak F1-Score of \textbf{0.8156} and a remarkably low MAE of \textbf{3.75 hours} while using 42,339 parameters. Additionally, the \textbf{Non-Linear GELU DLinear} achieved a record-setting Stockout Recall of \textbf{91.37\%}, making it ideal for strict risk mitigation scenarios. It comprehensively beat both our custom LSTM and all the basic baseline models (as you can see in Figure \ref{fig:final_comparison}). 
+
+
+
+\section{Conclusion}
+
+This project took on the real-world problem of predicting hourly stockouts in fast-paced grocery delivery. By moving away from predicting daily totals and focusing on specific hour-by-hour predictions, our team tackled a problem that actually costs delivery apps a lot of customers.
+
+Going through all these different models taught our team a few big lessons:
+
+\begin{enumerate}
+    \item \textbf{Good Features Matter Most:} Getting rid of bad data and focusing on a few strong features helped the models way more than just making the models bigger.
+    \item \textbf{Routing the Data Helps:} When building LSTMs, separating the demand numbers from the inventory numbers, and taking a "shortcut" for the most recent day's data, stopped the model from forgetting the important stuff.
+    \item \textbf{Linear Models Win Here:} In our strict testing, we proved that simple Decomposition Linear (DLinear) models are actually better for this specific short-term forecasting job than complex deep learning LSTMs.
+\end{enumerate}
+
+While our Dual-Stream Inventory Shortcut LSTM was our best idea for a recurrent model, the \textbf{Multi-Kernel Non-Linear DLinear} is the final model we recommend using in the real world. Because it doesn't have messy recurrent memory, it leverages independent GELU bottlenecks and runs multiple averages at the same time to easily handle the short 14-day history. This allows it to catch both sudden panic-buying and smooth weekly trends to get the highest F1-Score of 0.8156 and lowest MAE of 3.75 hours. 
+
+By predicting exactly which hour a shelf will empty, this tool can help grocery managers restock shelves before they run out. This means less spoiled food, less wasted money, and happier customers when they open the app to order.

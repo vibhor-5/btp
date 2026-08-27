@@ -1,0 +1,37 @@
+\chapter{Literature Survey}
+\label{chap:l_survey}
+
+Forecasting retail inventory and analyzing time-series data has changed a lot over the past decade. This chapter covers the different approaches researchers have taken to solve these problems.
+
+\section{Traditional Inventory Forecasting}
+
+In the past, predicting inventory relied on standard statistical models, mainly Autoregressive Integrated Moving Average (ARIMA) and Exponential Smoothing (ETS). While these models are good at math, they usually only look at one variable at a time. Because of this, they struggle to include outside factors like promotional discounts, weather changes, or holidays, which are very important in retail.
+
+Also, it is very slow and hard to run these traditional models for hundreds of thousands of different products across many stores. In modern retail, a basic statistical model often fails because it cannot learn how different things affect each other (for example, it cannot realize that a discount on Product A in one city might have a similar effect as a discount on Product B in another city).
+
+\section{The Deep Learning Shift in Time-Series}
+
+To fix the problems with those older statistical models, researchers started using deep learning for forecasting.
+
+\subsection{Recurrent Neural Networks (RNNs) and LSTMs}
+Recurrent Neural Networks, especially Long Short-Term Memory (LSTM) networks created by Hochreiter and Schmidhuber \cite{hochreiter1997long}, completely changed how we process data over time. Older RNNs used to forget earlier data in a sequence (a problem known as the vanishing gradient), but LSTMs use an internal memory and special "gates" (Input, Forget, and Output gates) to remember things better. This helps them capture trends over longer periods, making them the standard choice in the industry for forecasting over time.
+
+\subsection{Transformers and Linear Alternatives}
+More recently, researchers have adapted Transformer models for time-series forecasting. Transformers were originally built to process language all at once using something called "self-attention," leading to new models like the Informer \cite{zhou2021informer} and Autoformer \cite{wu2021autoformer}. Some have also tried using them on standard tabular data \cite{gorishniy2021revisiting}. 
+
+However, an important paper by Zeng et al. (2023) \cite{zeng2023dlinear} showed that simpler Decomposition Linear (DLinear) models could actually beat complex Transformers on many time-series tests, especially when looking at short periods of history. This discovery strongly influenced the later stages of our team's research.
+
+\subsection{Retail Aggregation Limitations}
+Traditional models often just predict a single, daily total for demand \cite{syntetos2016}. This hides exactly when an item goes out of stock during the day. Because of this limitation, our team knew we had to focus on detailed, hourly predictions instead.
+
+\section{Recent Advances in Stockout Prediction}
+
+Recent work has specifically targeted the exact problem of retail stockout prediction, highlighting the unique challenges of the domain:
+
+\begin{itemize}
+    \item \textbf{Classical ML Ensembles}: Andaur et al. (2021) showcased Random Forest and voting ensembles as robust benchmarks for retail stockout prediction on tabular data.
+    \item \textbf{Deep Learning Architectures}: Giaconia \& Chamas (2023) utilized massive CNN, Self-Attention, and Temporal Convolutional Networks (TCN) for intraday stockout probability.
+    \item \textbf{Large-Scale Imbalance Handling}: Liu et al. (2025) benchmarked XGBoost and SMOTE strategies, proving that near-term demand indicators dominate long-term forecasts for stockout events.
+\end{itemize}
+
+Furthermore, specific research utilizing the FreshRetail dataset has guided our focus. Works such as \textit{"A Coupled Hierarchical Architecture for Multi-Granularity Demand Forecasting"} tackle the complex spatial/product hierarchy, while \textit{"When Less Data Is Better: Eliminating Stockout-Induced Bias in Choice Estimation"} explicitly models how stockouts artificially deflate true demand signals. These foundational studies directly informed our strategy to isolate intraday stockout signals from censored demand noise.
