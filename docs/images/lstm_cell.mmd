@@ -1,0 +1,54 @@
+graph TD
+    classDef gate fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef op fill:#bbf,stroke:#333,stroke-width:2px,shape:circle;
+    
+    subgraph "LSTM Cell Architecture"
+        direction TB
+        
+        %% Inputs
+        C_prev(["C(t-1)"])
+        H_prev(["h(t-1)"])
+        X_t(["x(t)"])
+        
+        %% Gates
+        F["Forget Gate (σ)"]:::gate
+        I["Input Gate (σ)"]:::gate
+        C_hat["Cell Candidate (tanh)"]:::gate
+        O["Output Gate (σ)"]:::gate
+        
+        %% Operations
+        mul1(("*")):::op
+        mul2(("*")):::op
+        add1(("+")):::op
+        mul3(("*")):::op
+        tanh1["tanh"]:::gate
+        
+        %% Connections
+        C_prev --> mul1
+        
+        H_prev --> F
+        H_prev --> I
+        H_prev --> C_hat
+        H_prev --> O
+        
+        X_t --> F
+        X_t --> I
+        X_t --> C_hat
+        X_t --> O
+        
+        F -->|"f(t)"| mul1
+        
+        I -->|"i(t)"| mul2
+        C_hat -->|"c~(t)"| mul2
+        
+        mul1 --> add1
+        mul2 --> add1
+        
+        add1 --> C_t(["C(t)"])
+        add1 --> tanh1
+        
+        O -->|"o(t)"| mul3
+        tanh1 --> mul3
+        
+        mul3 --> H_t(["h(t)"])
+    end

@@ -148,6 +148,7 @@ shap_code = {
   "    test_num_flat = test_num.cpu().numpy().reshape(test_num.shape[0], -1)\n",
   "    \n",
   "    feature_names = []\n",
+  "    CFG.history_len = 14\n",
   "    for d in range(CFG.history_len):\n",
   "        for col in HIST_NUM_COLS:\n",
   "            feature_names.append(f\"D-{CFG.history_len-d}_{col}\")\n",

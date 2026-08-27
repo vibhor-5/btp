@@ -3,7 +3,7 @@ import base64
 import os
 
 path = "notebooks/04_rnn_attention_models.ipynb"
-artifact_dir = "/Users/vibhorkumar/.gemini/antigravity-cli/brain/be8a7b9c-5aa5-4454-8414-6aeb43de9444"
+artifact_dir = "docs/images"
 
 with open(path, "r") as f:
     nb = json.load(f)
