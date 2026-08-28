@@ -27,7 +27,12 @@
 \setbeamercolor{structure}{fg=primaryblue}
 
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{footline}{%
+  \hfill%
+  \usebeamercolor[fg]{page number in head/foot}%
+  \usebeamerfont{page number in head/foot}%
+  \insertframenumber\,/\,13\kern1em\vskip2pt%
+}
 
 % Title Information
 \title[Next-Day Stock Status Prediction]{Next-Day Stock Status Prediction in Fresh Retail}
