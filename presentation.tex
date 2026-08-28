@@ -27,7 +27,12 @@
 \setbeamercolor{structure}{fg=primaryblue}
 
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{footline}{%
+  \hfill%
+  \usebeamercolor[fg]{page number in head/foot}%
+  \usebeamerfont{page number in head/foot}%
+  \insertframenumber\,/\,13\kern1em\vskip2pt%
+}
 
 % Title Information
 \title[Next-Day Stock Status Prediction]{Next-Day Stock Status Prediction in Fresh Retail}
@@ -352,6 +357,21 @@
       \end{exampleblock}
     \end{column}
   \end{columns}
+\end{frame}
+
+% ==========================================
+% SLIDE 14: REFERENCES
+% ==========================================
+\begin{frame}{References}
+  \small
+  \begin{thebibliography}{99}
+    \bibitem{andaur2021} Andaur et al. (2021). Classical ML Ensembles for Retail Stockout Prediction on Tabular Data.
+    \bibitem{giaconia2023} Giaconia \& Chamas (2023). Deep Learning Architectures (CNN, Self-Attention, TCN) for Intraday Stockout Probability.
+    \bibitem{liu2025} Liu et al. (2025). Large-Scale Imbalance Handling (XGBoost \& SMOTE) for Stockout Events.
+    \bibitem{hierarchical} \textit{A Coupled Hierarchical Architecture for Multi-Granularity Demand Forecasting} (FreshRetail Benchmark).
+    \bibitem{censored} \textit{When Less Data Is Better: Eliminating Stockout-Induced Bias in Choice Estimation} (FreshRetail Benchmark).
+    \bibitem{zeng2023} Zeng, A., Chen, M., Zhang, L., \& Qi, Q. (2023). Are Transformers Effective for Time Series Forecasting? (DLinear).
+  \end{thebibliography}
 \end{frame}
 
 \end{document}
