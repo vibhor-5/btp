@@ -70,7 +70,7 @@ ax.legend(loc="upper right", frameon=True, facecolor="white", edgecolor="#cccccc
 
 # Annotate skewness & justification
 ax.annotate(
-    f"Heavy Long-Tail Skewness\nMax: {max_val:,.0f} hrs vs Min: {min_val:,.0f} hrs\n(Justifies Statistical Filtering to Top 15 SKUs)",
+    f"Heavy Long-Tail Skewness\nMax: {max_val:,.0f} hrs vs Min: {min_val:,.0f} hrs",
     xy=(mean_val * 2.5, 45),
     xytext=(mean_val * 2.2, 70),
     fontweight="bold",
