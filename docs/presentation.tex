@@ -341,8 +341,8 @@
       \begin{block}{Key Conclusions}
         \begin{itemize}
           \item \textbf{Lightweight Linear Decompositions Win}: DLinear variants (13k--42k params) outperform heavy Transformers ($>280\text{k}$ params) and deep CNN-TCN models ($>500\text{k}$ params).
-          \item \textbf{Dedicated 24 Slot Heads}: Resolves inter-hour gradient conflicts across operating store hours (+0.0161 F1 boost).
-          \item \textbf{GELU Non-Linearity Bottleneck}: Captures non-linear inventory step-functions, achieving peak \textbf{0.8156 F1} and \textbf{91.37\% Stockout Recall}.
+          \item \textbf{GELU Non-Linearity Bottleneck}: Exceeds standard linear limits by flawlessly mapping sudden shelf-depletion step-functions, achieving a peak \textbf{0.8156 F1} and \textbf{91.37\% Recall}.
+          \item \textbf{Edge-Deployable Efficiency}: Designed with a tiny parameter footprint specifically so local retail shops lacking heavy cloud infrastructure can run urgent stockout calculations on-device.
         \end{itemize}
       \end{block}
     \end{column}
@@ -350,9 +350,8 @@
     \begin{column}{0.48\textwidth}
       \begin{exampleblock}{Future Scope}
         \begin{itemize}
-          \item \textbf{Intraday Streaming Data}: Incorporate real-time point-of-sale transaction streams for dynamic intra-day stockout threshold adjustments.
-          \item \textbf{Spatial-Store Hierarchy}: Scale hourly slot projections across regional warehouse clusters for multi-echelon inventory replenishment.
-          \item \textbf{Censored Demand Modeling}: Integrate explicit choice estimation to unbias true demand during zero-stock hours.
+          \item Integrate explicit choice estimation to unbias true demand during zero-stock hours.
+          \item Improve the architecture to directly forecast the exact quantitative future demand for products, rather than just binary stockout probabilities.
         \end{itemize}
       \end{exampleblock}
     \end{column}
